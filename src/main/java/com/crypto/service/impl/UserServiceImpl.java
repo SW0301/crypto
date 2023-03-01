@@ -2,8 +2,8 @@ package com.crypto.service.impl;
 
 import com.crypto.dto.CurrencyDTO.*;
 import com.crypto.dto.UserDTO.CreateUserDTO;
-import com.crypto.dto.UserDTO.CurrencyExchangeDTO;
-import com.crypto.exeption.AppError;
+import com.crypto.dto.UserDTO.TransactionDTO;
+import com.crypto.exception.AppError;
 import com.crypto.model.Transaction;
 import com.crypto.model.User;
 import com.crypto.repository.TransactionRepository;
@@ -164,7 +164,9 @@ public class UserServiceImpl implements UserService {
                     return new AppError(HttpStatus.BAD_REQUEST.value(), "Can't add or subtract Balance");
             }
             transactionRepository.save(transaction);
-            return transaction;
+            TransactionDTO transactionDTO = new TransactionDTO(transaction.getCurrencyFrom(),
+                    transaction.getCurrencyTo(), transaction.getAmountFrom(), transaction.getAmountTo());
+            return transactionDTO;
 
         } else
             return new AppError(HttpStatus.NOT_FOUND.value(), "Not found currency or not enough money");

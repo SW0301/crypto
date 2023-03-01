@@ -3,7 +3,7 @@ package com.crypto.service.impl;
 import com.crypto.dto.CurrencyDTO.BtcExchangeRate;
 import com.crypto.dto.CurrencyDTO.RubExchangeRate;
 import com.crypto.dto.CurrencyDTO.TonExchangeRate;
-import com.crypto.exeption.AppError;
+import com.crypto.exception.AppError;
 import com.crypto.model.ExchangeRate;
 import com.crypto.repository.ExchangeRateRepository;
 import com.crypto.service.ExchangeRateService;

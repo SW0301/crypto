@@ -10,7 +10,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CurrencyExchangeResponseDTO {
+@AllArgsConstructor
+public class TransactionDTO {
     private String currency_from;
     private String currency_to;
     private BigDecimal amount_from;

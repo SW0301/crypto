@@ -4,9 +4,7 @@ import com.crypto.dto.*;
 import com.crypto.dto.CurrencyDTO.RubWalletDTO;
 import com.crypto.dto.CurrencyDTO.UserBalanceDTO;
 import com.crypto.dto.UserDTO.*;
-import com.crypto.exeption.AppError;
-import com.crypto.model.Transaction;
-import com.crypto.service.ExchangeRateService;
+import com.crypto.exception.AppError;
 import com.crypto.service.UserService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -83,13 +81,7 @@ public class UserController {
                 AppError appError = (AppError) response;
                 return new ResponseEntity<>(appError, HttpStatusCode.valueOf(appError.getStatusCode()));
             } else {
-                Transaction transaction = (Transaction) response;
-                CurrencyExchangeResponseDTO currencyExchangeResponseDTO = new CurrencyExchangeResponseDTO();
-                currencyExchangeResponseDTO.setCurrency_to(transaction.getCurrencyTo());
-                currencyExchangeResponseDTO.setCurrency_from(transaction.getCurrencyFrom());
-                currencyExchangeResponseDTO.setAmount_from(transaction.getAmountFrom());
-                currencyExchangeResponseDTO.setAmount_to(transaction.getAmountTo());
-                return new ResponseEntity<>(currencyExchangeResponseDTO, HttpStatus.OK);
+                return new ResponseEntity<>(response, HttpStatus.OK);
             }
         } else {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),

@@ -18,9 +18,10 @@ public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long
     @Modifying
     @Transactional
     @Query(value = "UPDATE ExchangeRate SET currencyInBtc = :currencyInBtc, currencyInRub = :currencyInRub WHERE currency ='TON'")
-    void changeExchangeRateTon(@Param("currencyInBtc")BigDecimal currencyInBtc, @Param("currencyInRub") BigDecimal currencyInRub);
+    void changeExchangeRateTon(@Param("currencyInBtc") BigDecimal currencyInBtc, @Param("currencyInRub") BigDecimal currencyInRub);
+
     @Modifying
     @Transactional
-    @Query(value = "UPDATE ExchangeRate SET currencyInBtc = :currencyInTon, currencyInRub = :currencyInRub WHERE currency ='BTC'")
-    void changeExchangeRateBtc(@Param("currencyInTon")BigDecimal currencyInTon, @Param("currencyInRub") BigDecimal currencyInRub);
+    @Query(value = "UPDATE ExchangeRate SET currencyInTon = :currencyInTon, currencyInRub = :currencyInRub WHERE currency ='BTC'")
+    void changeExchangeRateBtc(@Param("currencyInTon") BigDecimal currencyInTon, @Param("currencyInRub") BigDecimal currencyInRub);
 }

@@ -1,7 +1,7 @@
 package com.crypto.controller;
 
 import com.crypto.dto.SecretKeyCurrencyDTO;
-import com.crypto.exeption.AppError;
+import com.crypto.exception.AppError;
 import com.crypto.service.AdminService;
 import com.crypto.service.ExchangeRateService;
 import com.crypto.service.UserService;
@@ -30,7 +30,7 @@ public class ExchangeRateController {
         String secretKey = secretKeyCurrencyDTO.getSecret_key();
         if (userService.secretKeyExistence(secretKey) || adminService.secretKeyExistence(secretKey)) {
             Object currentExchangeRates = exchangeRateService.currentExchangeRates(currency);
-            if (currentExchangeRates.getClass().equals("class com.cpypto.exeption.AppError")) {
+            if (currentExchangeRates.getClass().equals("class com.cpypto.exception.AppError")) {
                 AppError appError = (AppError) currentExchangeRates;
                 return new ResponseEntity<>(appError, HttpStatusCode.valueOf(appError.getStatusCode()));
             } else {

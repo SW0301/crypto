@@ -1,4 +1,4 @@
-package com.crypto.exeption;
+package com.crypto.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

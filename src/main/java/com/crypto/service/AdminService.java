@@ -3,11 +3,10 @@ package com.crypto.service;
 
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 
 public interface AdminService {
-    Object changeExchangeRate(String baseCurrency, BigDecimal btcWallet, BigDecimal rubWallet);
+    Object changeExchangeRate(String baseCurrency, BigDecimal tonWallet, BigDecimal rubWallet, BigDecimal btcWallet);
 
     Object totalAmountAllAccounts(String currency);
 

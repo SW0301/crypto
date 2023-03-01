@@ -1,10 +1,9 @@
 package com.crypto.service.impl;
 
 import com.crypto.dto.AdminDTO.TransactionCountDTO;
-import com.crypto.dto.CurrencyDTO.BtcWalletDTO;
-import com.crypto.dto.CurrencyDTO.RubWalletDTO;
-import com.crypto.dto.CurrencyDTO.TonWalletDTO;
-import com.crypto.exeption.AppError;
+import com.crypto.dto.CurrencyDTO.*;
+import com.crypto.exception.AppError;
+import com.crypto.model.ExchangeRate;
 import com.crypto.repository.AdminRepository;
 import com.crypto.repository.ExchangeRateRepository;
 import com.crypto.repository.TransactionRepository;
@@ -37,14 +36,20 @@ public class AdminServiceImpl implements AdminService {
 
 
     @Override
-    public Object changeExchangeRate(String baseCurrency, BigDecimal firstWallet, BigDecimal secondWallet) {
+    public Object changeExchangeRate(String baseCurrency, BigDecimal tonWallet, BigDecimal rubWallet, BigDecimal btcWallet) {
         if(baseCurrency.equalsIgnoreCase("ton")) {
-            exchangeRateRepository.changeExchangeRateTon(firstWallet, secondWallet);
-            return exchangeRateRepository.findByCurrency(baseCurrency);
+            exchangeRateRepository.changeExchangeRateTon(btcWallet, rubWallet);
+            ExchangeRate exchangeRate = exchangeRateRepository.findByCurrency(baseCurrency);
+            TonExchangeRate tonExchangeRate = new TonExchangeRate(exchangeRate.getCurrencyInRub(),
+                    exchangeRate.getCurrencyInBtc());
+            return tonExchangeRate;
         }
         else if (baseCurrency.equalsIgnoreCase("btc")) {
-            exchangeRateRepository.changeExchangeRateBtc(firstWallet, secondWallet);
-            return exchangeRateRepository.findByCurrency(baseCurrency);
+            exchangeRateRepository.changeExchangeRateBtc(tonWallet, rubWallet);
+            ExchangeRate exchangeRate = exchangeRateRepository.findByCurrency(baseCurrency);
+            BtcExchangeRate btcExchangeRate = new BtcExchangeRate(exchangeRate.getCurrencyInRub(),
+                    exchangeRate.getCurrencyInTon());
+            return btcExchangeRate;
         }
         else return  new AppError(HttpStatus.BAD_REQUEST.value(), " Bad  base currency");
     }
