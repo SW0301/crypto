@@ -1,29 +1,39 @@
 package com.crypto.service.impl;
 
 import com.crypto.dto.CurrencyDTO.*;
-import com.crypto.dto.CreateUserDTO;
-import com.crypto.model.ExchangeRate;
+import com.crypto.dto.UserDTO.CreateUserDTO;
+import com.crypto.dto.UserDTO.CurrencyExchangeDTO;
+import com.crypto.exeption.AppError;
+import com.crypto.model.Transaction;
 import com.crypto.model.User;
-import com.crypto.repository.ExchangeRateRepository;
+import com.crypto.repository.TransactionRepository;
 import com.crypto.repository.UserRepository;
+import com.crypto.service.ExchangeRateService;
 import com.crypto.service.UserService;
+import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.util.Base64;
-import java.util.Locale;
+
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final ExchangeRateRepository exchangeRateRepository;
+    private final TransactionRepository transactionRepository;
+    private final ExchangeRateService exchangeRateService;
 
-    public UserServiceImpl(UserRepository userRepository, ExchangeRateRepository exchangeRateRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           TransactionRepository transactionRepository, ExchangeRateService exchangeRateService) {
         this.userRepository = userRepository;
-        this.exchangeRateRepository = exchangeRateRepository;
+        this.transactionRepository = transactionRepository;
+        this.exchangeRateService = exchangeRateService;
     }
 
     @Override
@@ -52,44 +62,112 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BigDecimal addBalance(String secretKey, BigDecimal rubWallet) {
-        userRepository.addBalance(rubWallet, secretKey);
+        userRepository.addBalanceRub(rubWallet, secretKey);
         return userRepository.findBySecretKey(secretKey).getRubWallet();
     }
 
     @Override
     public Object withdrawalOfMoney(String secretKey, String currency, BigDecimal count) {
         User user = userRepository.findBySecretKey(secretKey);
-        if (currency.equalsIgnoreCase("rub")) {
-            userRepository.withdrawalOfBalanceRUB(secretKey, count);
-            user.setRubWallet(user.getRubWallet().subtract(count));
-            return new RubWalletDTO(user.getRubWallet());
-        } else if (currency.equalsIgnoreCase("ton")) {
-            userRepository.withdrawalOfBalanceTON(secretKey, count);
-            user.setTonWallet(user.getTonWallet().subtract(count));
-            return new TonWalletDTO(user.getTonWallet());
-        } else {
-            userRepository.withdrawalOfBalanceBTC(secretKey, count);
-            user.setBtcWallet(user.getBtcWallet().subtract(count));
-            return new BtcWalletDTO(user.getBtcWallet());
-        }
+        UserBalanceDTO userBalanceDTO = checkBalance(secretKey);
+        if ((currency.equalsIgnoreCase("rub") && userBalanceDTO.getRUB_wallet().compareTo(count) >= 0) ||
+                (currency.equalsIgnoreCase("ton") && userBalanceDTO.getTON_wallet().compareTo(count) >= 0) ||
+                (currency.equalsIgnoreCase("btc") && userBalanceDTO.getBTC_wallet().compareTo(count) >= 0)) {
+            switch (currency.toLowerCase()) {
+                case "rub": {
+                    userRepository.subtractingTheBalanceRUB(secretKey, count);
+                    user.setRubWallet(user.getRubWallet().subtract(count));
+                    return new RubWalletDTO(user.getRubWallet());
+                }
+                case "ton": {
+                    userRepository.subtractingTheBalanceTON(secretKey, count);
+                    user.setTonWallet(user.getTonWallet().subtract(count));
+                    return new TonWalletDTO(user.getTonWallet());
+                }
+                case "btc": {
+                    userRepository.subtractingTheBalanceBTC(secretKey, count);
+                    user.setBtcWallet(user.getBtcWallet().subtract(count));
+                    return new BtcWalletDTO(user.getBtcWallet());
+                }
+                default:
+                    return new AppError(HttpStatus.BAD_REQUEST.value(),
+                            "Currency not found");
+            }
+        } else return new AppError(HttpStatus.BAD_REQUEST.value(),
+                "Currency not found");
     }
 
-    @Override
-    public Object currentExchangeRates(String currency) {
-        ExchangeRate exchangeRate = exchangeRateRepository.findByCurrency(currency.toUpperCase());
-        if (currency.equalsIgnoreCase("ton")) {
-            TonExchangeRate tonExchangeRate = new TonExchangeRate(exchangeRate.getCurrencyInRub(), exchangeRate.getCurrencyInBtc());
-            return tonExchangeRate;
-        }
-        else {
-            BtcExchangeRate btcExchangeRate = new BtcExchangeRate(exchangeRate.getCurrencyInRub(), exchangeRate.getCurrencyInTon());
-            return btcExchangeRate;
-        }
-    }
 
     @Override
-    public void currencyExchange(String secretKey, String currencyFrom, String currencyTo, BigDecimal amount) {
+    public Object currencyExchange(String secretKey, String currencyFrom, String currencyTo, BigDecimal amount) {
+        BigDecimal amountTo;
+        User user = userRepository.findBySecretKey(secretKey);
 
+        Transaction transaction = new Transaction();
+        transaction.setCurrencyFrom(currencyFrom);
+        transaction.setCurrencyTo(currencyTo);
+        transaction.setUserId(user.getId());
+
+
+        if ((currencyFrom.equalsIgnoreCase("rub") &&
+                user.getRubWallet().compareTo(amount) >= 0) || (currencyFrom.equalsIgnoreCase("ton") &&
+                user.getTonWallet().compareTo(amount) >= 0) || (currencyFrom.equalsIgnoreCase("btc") &&
+                user.getBtcWallet().compareTo(amount) >= 0)) {
+
+            transaction.setAmountFrom(amount);
+            transaction.setDateOf(LocalDate.now());
+
+            switch (currencyTo.toLowerCase()) {
+                case "rub": {
+                    RubExchangeRate rubExchangeRate =
+                            (RubExchangeRate) exchangeRateService.currentExchangeRates(currencyTo);
+                    if (currencyFrom.equalsIgnoreCase("ton")) {
+                        userRepository.subtractingTheBalanceTON(secretKey, amount);
+                        amountTo = amount.divide(rubExchangeRate.getTON(), 2, RoundingMode.CEILING);
+                    } else {
+                        userRepository.subtractingTheBalanceBTC(secretKey, amount);
+                        amountTo = amount.divide(rubExchangeRate.getBTC(), 2, RoundingMode.CEILING);
+                    }
+                    userRepository.addBalanceRub(amountTo, secretKey);
+                    transaction.setAmountTo(amountTo);
+                    break;
+                }
+                case "ton": {
+                    TonExchangeRate tonExchangeRate =
+                            (TonExchangeRate) exchangeRateService.currentExchangeRates(currencyTo);
+                    if (currencyFrom.equalsIgnoreCase("rub")) {
+                        userRepository.subtractingTheBalanceRUB(secretKey, amount);
+                        amountTo = amount.divide(tonExchangeRate.getRUB(), 6, RoundingMode.CEILING);
+                    } else {
+                        userRepository.subtractingTheBalanceBTC(secretKey, amount);
+                        amountTo = amount.divide(tonExchangeRate.getBTC(), 6, RoundingMode.CEILING);
+                    }
+                    transaction.setAmountTo(amountTo);
+                    userRepository.addBalanceTon(amountTo, secretKey);
+                    break;
+                }
+                case "btc": {
+                    BtcExchangeRate btcExchangeRate =
+                            (BtcExchangeRate) exchangeRateService.currentExchangeRates(currencyTo);
+                    if (currencyFrom.equalsIgnoreCase("rub")) {
+                        userRepository.subtractingTheBalanceRUB(secretKey, amount);
+                        amountTo = amount.divide(btcExchangeRate.getRUB(), 8, RoundingMode.CEILING);
+                    } else {
+                        userRepository.subtractingTheBalanceTON(secretKey, amount);
+                        amountTo = amount.divide(btcExchangeRate.getTON(), 8, RoundingMode.CEILING);
+                    }
+                    transaction.setAmountTo(amountTo);
+                    userRepository.addBalanceBtc(amountTo, secretKey);
+                    break;
+                }
+                default:
+                    return new AppError(HttpStatus.BAD_REQUEST.value(), "Can't add or subtract Balance");
+            }
+            transactionRepository.save(transaction);
+            return transaction;
+
+        } else
+            return new AppError(HttpStatus.NOT_FOUND.value(), "Not found currency or not enough money");
     }
 
     public String getKey() {

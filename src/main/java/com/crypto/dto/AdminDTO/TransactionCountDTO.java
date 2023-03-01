@@ -1,16 +1,14 @@
-package com.crypto.dto.CurrencyDTO;
+package com.crypto.dto.AdminDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
+@NoArgsConstructor
 @Setter
 @Getter
-@NoArgsConstructor
-public class TonWalletDTO {
-    private BigDecimal TON_wallet;
+public class TransactionCountDTO {
+    private int transaction_count;
 }

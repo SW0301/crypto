@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class Transaction {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_id_generator")
     @SequenceGenerator(name = "transaction_id_generator", sequenceName = "transaction_id_seq", allocationSize = 1)
-    private Long Id;
+    private Long id;
 
     @Column(name="user_id")
     private Long userId;
@@ -32,10 +33,13 @@ public class Transaction {
     @Column(name = "currency_to")
     private String currencyTo;
 
-    @Column(name = "amount")
-    private BigDecimal amount;
+    @Column(name = "amount_from")
+    private BigDecimal amountFrom;
+
+    @Column(name="amount_to")
+    private BigDecimal amountTo;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "date_of")
-    private Date dateOf;
+    private LocalDate dateOf;
 }

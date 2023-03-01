@@ -1,4 +1,4 @@
-package com.crypto.dto;
+package com.crypto.dto.UserDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

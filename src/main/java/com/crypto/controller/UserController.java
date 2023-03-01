@@ -3,13 +3,13 @@ package com.crypto.controller;
 import com.crypto.dto.*;
 import com.crypto.dto.CurrencyDTO.RubWalletDTO;
 import com.crypto.dto.CurrencyDTO.UserBalanceDTO;
+import com.crypto.dto.UserDTO.*;
+import com.crypto.exeption.AppError;
+import com.crypto.model.Transaction;
+import com.crypto.service.ExchangeRateService;
 import com.crypto.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 
@@ -22,30 +22,34 @@ public class UserController {
     }
 
     @PostMapping("/createUser")
-    public SecretKeyDTO createUser(@RequestBody CreateUserDTO createUserDTO) {
-        SecretKeyDTO createUserDTOResponse = new SecretKeyDTO();
+    public ResponseEntity<?> createUser(@RequestBody CreateUserDTO createUserDTO) {
+        SecretKeyDTO secretKeyDTO = new SecretKeyDTO();
         if (userService.emailExistence(createUserDTO.getUserName()) ||
                 userService.userNameExistence(createUserDTO.getUserName())) {
-            createUserDTOResponse.setSecret_key("Отказано в регистрации");
-            return createUserDTOResponse;
-        } else createUserDTOResponse.setSecret_key(userService.createUser(createUserDTO));
-        return createUserDTOResponse;
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
+                    "Already exists email or user name"), HttpStatus.BAD_REQUEST);
+        } else {
+            secretKeyDTO.setSecret_key(userService.createUser(createUserDTO));
+            return new ResponseEntity<>(secretKeyDTO, HttpStatus.OK);
+        }
     }
 
     @GetMapping("/checkBalance")
-    public ResponseEntity<UserBalanceDTO> checkBalance(@RequestBody SecretKeyDTO secretKeyDTO) {
+    public ResponseEntity<?> checkBalance(@RequestBody SecretKeyDTO secretKeyDTO) {
         if (secretKeyDTO != null && userService.secretKeyExistence(secretKeyDTO.getSecret_key())) {
             UserBalanceDTO balanceDTO = userService.checkBalance(secretKeyDTO.getSecret_key());
             return new ResponseEntity<>(balanceDTO, HttpStatus.OK);
-        } else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else return new ResponseEntity<>(new AppError(HttpStatus.NOT_FOUND.value(),
+                "There is no such secret key"), HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/addBalance")
-    public ResponseEntity<RubWalletDTO> addBalance(@RequestBody AddBalanceDTO addBalanceDTO) {
+    public ResponseEntity<?> addBalance(@RequestBody AddBalanceDTO addBalanceDTO) {
         if (addBalanceDTO != null && userService.secretKeyExistence(addBalanceDTO.getSecret_key()))
             return new ResponseEntity<>(new RubWalletDTO(userService.addBalance(addBalanceDTO.getSecret_key(),
                     addBalanceDTO.getRUB_wallet())), HttpStatus.OK);
-        else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        else return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
+                "There is no such secret key"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/withdrawalOfMoney")
@@ -53,27 +57,44 @@ public class UserController {
         String currency = withdrawalOfMoneyDTO.getCurrency();
         String secretKey = withdrawalOfMoneyDTO.getSecret_key();
         BigDecimal count = withdrawalOfMoneyDTO.getCount();
-
         if (withdrawalOfMoneyDTO != null && userService.secretKeyExistence(secretKey) && secretKey != null) {
-            UserBalanceDTO userBalanceDTO = userService.checkBalance(secretKey);
-            if ((currency.equalsIgnoreCase("rub") && userBalanceDTO.getRUB_wallet().compareTo(count) >= 0) ||
-                    (currency.equalsIgnoreCase("ton") && userBalanceDTO.getTON_wallet().compareTo(count) >= 0)
-                    || (currency.equalsIgnoreCase("btc") && userBalanceDTO.getBTC_wallet().compareTo(count) >= 0))
-                return new ResponseEntity<>(userService.withdrawalOfMoney(secretKey, currency, count), HttpStatus.OK);
-            else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            var response = userService.withdrawalOfMoney(secretKey, currency, count);
+            if (response.getClass().equals("class com.crypto.exepion.AppError")) {
+                AppError appError = (AppError) response;
+                return new ResponseEntity<>(appError, HttpStatus.valueOf(appError.getStatusCode()));
+            } else {
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } else return new ResponseEntity<>(new AppError(HttpStatus.NOT_FOUND.value(),
+                "There is no such secret key"), HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("/currentExchangeRates")
-    public ResponseEntity<Object> currentExchangeRates(@RequestBody CurrentExchangeRatesDTO currentExchangeRatesDTO) {
-        String currency = currentExchangeRatesDTO.getCurrency();
-        String secretKey = currentExchangeRatesDTO.getSecret_key();
-        if (userService.secretKeyExistence(secretKey) && (currency.equalsIgnoreCase("ton") ||
-                currency.equalsIgnoreCase("btc"))) {
-            Object currentExchangeRates = userService.currentExchangeRates(currency);
-            return new ResponseEntity<>(currentExchangeRates, HttpStatus.OK);
+
+    @PostMapping("/currencyExchange")
+    public ResponseEntity<?> currencyExchange(@RequestBody CurrencyExchangeDTO currencyExchangeDTO) {
+        if (userService.secretKeyExistence(currencyExchangeDTO.getSecret_key()) && currencyExchangeDTO != null) {
+            String secretKey = currencyExchangeDTO.getSecret_key();
+            String currencyFrom = currencyExchangeDTO.getCurrency_from();
+            String currencyTo = currencyExchangeDTO.getCurrency_to();
+            BigDecimal amount = currencyExchangeDTO.getAmount();
+            var response = userService.currencyExchange(secretKey, currencyFrom, currencyTo, amount);
+
+            if (response.getClass().equals("class com.crypto.exepion.AppError")) {
+                AppError appError = (AppError) response;
+                return new ResponseEntity<>(appError, HttpStatusCode.valueOf(appError.getStatusCode()));
+            } else {
+                Transaction transaction = (Transaction) response;
+                CurrencyExchangeResponseDTO currencyExchangeResponseDTO = new CurrencyExchangeResponseDTO();
+                currencyExchangeResponseDTO.setCurrency_to(transaction.getCurrencyTo());
+                currencyExchangeResponseDTO.setCurrency_from(transaction.getCurrencyFrom());
+                currencyExchangeResponseDTO.setAmount_from(transaction.getAmountFrom());
+                currencyExchangeResponseDTO.setAmount_to(transaction.getAmountTo());
+                return new ResponseEntity<>(currencyExchangeResponseDTO, HttpStatus.OK);
+            }
+        } else {
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
+                    "There is no such secret key"), HttpStatus.BAD_REQUEST);
         }
-        else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
 }

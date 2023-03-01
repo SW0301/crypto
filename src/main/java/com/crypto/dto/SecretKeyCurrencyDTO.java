@@ -8,7 +8,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CurrentExchangeRatesDTO {
+public class SecretKeyCurrencyDTO {
     private String secret_key;
     private String currency;
 }

@@ -1,16 +1,15 @@
-package com.crypto.dto.CurrencyDTO;
+package com.crypto.exeption;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
-@Setter
-@Getter
 @NoArgsConstructor
-public class TonWalletDTO {
-    private BigDecimal TON_wallet;
+@Getter
+@Setter
+public class AppError {
+    private int statusCode;
+    private String message;
 }

@@ -1,9 +1,10 @@
-package com.crypto.dto;
+package com.crypto.dto.UserDTO;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 public class WithdrawalOfMoneyDTO {
