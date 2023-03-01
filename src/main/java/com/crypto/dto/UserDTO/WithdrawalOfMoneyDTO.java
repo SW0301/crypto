@@ -6,11 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-
-@Getter
-@NoArgsConstructor
-@Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class WithdrawalOfMoneyDTO {
     private String secret_key;
     private String currency;

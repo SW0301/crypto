@@ -1,8 +1,12 @@
 package com.crypto.service.impl;
 
 import com.crypto.dto.CurrencyDTO.*;
-import com.crypto.dto.UserDTO.CreateUserDTO;
+import com.crypto.dto.ExchangeRateDTO.BtcExchangeRate;
+import com.crypto.dto.ExchangeRateDTO.RubExchangeRate;
+import com.crypto.dto.ExchangeRateDTO.TonExchangeRate;
 import com.crypto.dto.UserDTO.TransactionDTO;
+import com.crypto.dto.UserDTO.UserBalanceDTO;
+import com.crypto.dto.UserDTO.UserDTO;
 import com.crypto.exception.AppError;
 import com.crypto.model.Transaction;
 import com.crypto.model.User;
@@ -37,10 +41,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String createUser(CreateUserDTO createUserDTO) {
+    public String createUser(UserDTO UserDTO) {
         User user = new User();
-        user.setUserName(createUserDTO.getUserName());
-        user.setEmail(createUserDTO.getEmail());
+        user.setUserName(UserDTO.getUserName());
+        user.setEmail(UserDTO.getEmail());
         user.setRubWallet(BigDecimal.valueOf(0));
         user.setBtcWallet(BigDecimal.valueOf(0));
         user.setTonWallet(BigDecimal.valueOf(0));
@@ -61,9 +65,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public BigDecimal addBalance(String secretKey, BigDecimal rubWallet) {
-        userRepository.addBalanceRub(rubWallet, secretKey);
-        return userRepository.findBySecretKey(secretKey).getRubWallet();
+    public Object addBalance(String secretKey, BigDecimal Wallet) {
+        userRepository.addBalanceRub(Wallet, secretKey);
+        RubWalletDTO rubWalletDTO = new RubWalletDTO(userRepository.findBySecretKey(secretKey).getRubWallet());
+        return rubWalletDTO;
     }
 
     @Override

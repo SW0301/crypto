@@ -7,10 +7,10 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class RubWalletDTO {
     private BigDecimal RUB_wallet;
 }

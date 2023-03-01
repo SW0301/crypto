@@ -1,6 +1,5 @@
 package com.crypto.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +12,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
 @Entity
 @Table(name = "pguser", schema = "public")
 public class User {

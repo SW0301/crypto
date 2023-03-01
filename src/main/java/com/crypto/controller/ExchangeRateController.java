@@ -1,6 +1,6 @@
 package com.crypto.controller;
 
-import com.crypto.dto.SecretKeyCurrencyDTO;
+import com.crypto.dto.SecretKeyWithCurrencyDTO;
 import com.crypto.exception.AppError;
 import com.crypto.service.AdminService;
 import com.crypto.service.ExchangeRateService;
@@ -25,9 +25,9 @@ public class ExchangeRateController {
     }
 
     @GetMapping("/currentExchangeRates")
-    public ResponseEntity<Object> currentExchangeRates(@RequestBody SecretKeyCurrencyDTO secretKeyCurrencyDTO) {
-        String currency = secretKeyCurrencyDTO.getCurrency();
-        String secretKey = secretKeyCurrencyDTO.getSecret_key();
+    public ResponseEntity<Object> currentExchangeRates(@RequestBody SecretKeyWithCurrencyDTO secretKeyWithCurrencyDTO) {
+        String currency = secretKeyWithCurrencyDTO.getCurrency();
+        String secretKey = secretKeyWithCurrencyDTO.getSecret_key();
         if (userService.secretKeyExistence(secretKey) || adminService.secretKeyExistence(secretKey)) {
             Object currentExchangeRates = exchangeRateService.currentExchangeRates(currency);
             if (currentExchangeRates.getClass().equals("class com.cpypto.exception.AppError")) {

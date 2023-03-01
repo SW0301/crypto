@@ -8,9 +8,9 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Setter
 @Getter
-@NoArgsConstructor
 public class BtcWalletDTO {
     private BigDecimal BTC_wallet;
 }

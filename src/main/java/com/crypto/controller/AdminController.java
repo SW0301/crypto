@@ -2,7 +2,7 @@ package com.crypto.controller;
 
 import com.crypto.dto.AdminDTO.ChangeExchangeRateDTO;
 import com.crypto.dto.AdminDTO.NumberOfTransactionsDuringPeriodDTO;
-import com.crypto.dto.SecretKeyCurrencyDTO;
+import com.crypto.dto.SecretKeyWithCurrencyDTO;
 import com.crypto.exception.AppError;
 import com.crypto.service.AdminService;
 import org.springframework.http.HttpStatus;
@@ -46,9 +46,9 @@ public class AdminController {
 
 
     @GetMapping("/totalAmountAllAccounts")
-    public ResponseEntity<?> totalAmountAllAccounts(@RequestBody SecretKeyCurrencyDTO secretKeyCurrencyDTO) {
-        if (secretKeyCurrencyDTO != null && adminService.secretKeyExistence(secretKeyCurrencyDTO.getSecret_key())) {
-            var response = adminService.totalAmountAllAccounts(secretKeyCurrencyDTO.getCurrency());
+    public ResponseEntity<?> totalAmountAllAccounts(@RequestBody SecretKeyWithCurrencyDTO secretKeyWithCurrencyDTO) {
+        if (secretKeyWithCurrencyDTO != null && adminService.secretKeyExistence(secretKeyWithCurrencyDTO.getSecret_key())) {
+            var response = adminService.totalAmountAllAccounts(secretKeyWithCurrencyDTO.getCurrency());
             if (response.getClass().equals("class com.crypto.exception.AppError")) {
                 AppError appError = new AppError();
                 return new ResponseEntity<>(appError, HttpStatusCode.valueOf(appError.getStatusCode()));

@@ -7,10 +7,10 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@AllArgsConstructor
 public class TransactionDTO {
     private String currency_from;
     private String currency_to;

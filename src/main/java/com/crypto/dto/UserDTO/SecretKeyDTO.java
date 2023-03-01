@@ -1,15 +1,15 @@
 package com.crypto.dto.UserDTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-public class AddBalanceDTO {
+public class SecretKeyDTO {
     private String secret_key;
-    private BigDecimal RUB_wallet;
 }

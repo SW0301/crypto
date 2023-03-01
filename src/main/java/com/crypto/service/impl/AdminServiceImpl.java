@@ -2,6 +2,8 @@ package com.crypto.service.impl;
 
 import com.crypto.dto.AdminDTO.TransactionCountDTO;
 import com.crypto.dto.CurrencyDTO.*;
+import com.crypto.dto.ExchangeRateDTO.BtcExchangeRate;
+import com.crypto.dto.ExchangeRateDTO.TonExchangeRate;
 import com.crypto.exception.AppError;
 import com.crypto.model.ExchangeRate;
 import com.crypto.repository.AdminRepository;

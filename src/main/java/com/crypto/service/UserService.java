@@ -1,19 +1,18 @@
 package com.crypto.service;
 
-import com.crypto.dto.CurrencyDTO.UserBalanceDTO;
-import com.crypto.dto.UserDTO.CreateUserDTO;
-
+import com.crypto.dto.UserDTO.UserBalanceDTO;
+import com.crypto.dto.UserDTO.UserDTO;
 
 
 import java.math.BigDecimal;
 
 
 public interface UserService {
-    String createUser(CreateUserDTO createUserDTO);
+    String createUser(UserDTO UserDTO);
 
     UserBalanceDTO checkBalance(String secretKey);
 
-    BigDecimal addBalance(String secretKey, BigDecimal rubWallet);
+    Object addBalance(String secretKey, BigDecimal rubWallet);
 
     Object withdrawalOfMoney(String secretKey, String currency, BigDecimal count);
 

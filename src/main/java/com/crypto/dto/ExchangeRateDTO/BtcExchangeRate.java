@@ -1,4 +1,4 @@
-package com.crypto.dto.CurrencyDTO;
+package com.crypto.dto.ExchangeRateDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,9 @@ import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-public class TonWalletDTO {
-    private BigDecimal TON_wallet;
+@Setter
+public class BtcExchangeRate {
+    private BigDecimal RUB;
+    private BigDecimal TON;
 }
